@@ -1,6 +1,6 @@
 {
     "name": "express-starter",
-    "version": "v0.0.1",
+    "version": "0.0.1",
     "private": true,
     "scripts": {
         "start": "node ./bin/www",
@@ -35,5 +35,9 @@
         "eslint-plugin-prettier": "^5.2.3",
         "globals": "^15.15.0",
         "prettier": "^3.4.2"
-    }
+    },
+    "description": "## Root - **`env.sample`**: File template untuk konfigurasi environment yang bisa digunakan untuk mengatur variabel lingkungan pada aplikasi. - **`app.js`**: File utama aplikasi yang berfungsi sebagai entry point untuk menjalankan aplikasi.",
+    "main": "app.js",
+    "author": "",
+    "license": "ISC"
 }
