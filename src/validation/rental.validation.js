@@ -2,6 +2,7 @@ const { body, param } = require("express-validator");
 const STATUS = require("../constant/status-data.constant");
 
 // repository
+const rentalRepo = require("../repository/rental.repository");
 const wheelchairRepo = require("../repository/wheelchair.repository");
 
 // create rental validation
@@ -35,27 +36,26 @@ const create = [
 // update rental validation
 // prettier-ignore
 const update = [
-    param('rental_id', 'Rental ID is required')
-        .exists({ checkFalsy: true })
-        .custom(async (value) => {
-            const rental = await rentalRepo.findOne({ id: value });
-            if (!rental) {
-                throw new Error('Rental not found');
-            }
-            return true;
-        }),
-    body('return_date', 'Return date is required')
-        .exists({ checkFalsy: true })
-        .isDate().withMessage('Return date must be a valid date'),
-    body('total_price', 'Total price is required')
-        .exists({ checkFalsy: true })
-        .isFloat().withMessage('Total price must be a valid number')
+  param("id", "Rental ID is required")
+    .exists({ checkFalsy: true })
+    .custom(async (value) => {
+      const rental = await rentalRepo.findOne({ id: value });
+      if (!rental) {
+        throw new Error("Rental not found");
+      }
+      return true;
+    }),
+
+  body("return_date", "Return date is required")
+    .exists({ checkFalsy: true })
+    .isISO8601()
+    .withMessage("Return date must be a valid date (YYYY-MM-DD)"),
 ];
 
 // cancel rental validation
 // prettier-ignore
 const cancel = [
-    param('rental_id', 'Rental ID is required')
+    param('id', 'Rental ID is required')
         .exists({ checkFalsy: true })
         .custom(async (value) => {
             const rental = await rentalRepo.findOne({ id: value });

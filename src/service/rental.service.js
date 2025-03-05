@@ -51,20 +51,29 @@ const getAllRentals = async (req) => {
 
 // get rental details based on phone number (without login)
 const getRentalDetail = async (req) => {
-  const rentalId = req.params.id;
-  const customerPhone = req.query.phone;
+  const rentalId = req.params.id; // Should be a string
+  const customerPhone = req.query.phone; // Should be a string or undefined
 
-  if (!rentalId || !isValidUUID(rentalId)) {
-    throw new Error("Invalid Rental ID");
-  }
+  // Log the inputs for debugging
+  console.log("Rental ID:", rentalId, "Type:", typeof rentalId);
+  console.log("Customer Phone:", customerPhone, "Type:", typeof customerPhone);
 
   try {
-    const data = await rentalRepo.findOne({
-      where: {
-        id: rentalId,
-        customer_phone: customerPhone,
-      },
-    });
+    // Construct the where clause
+    const whereClause = {
+      id: rentalId,
+    };
+
+    // Add customer_phone to the where clause only if it's provided
+    if (customerPhone) {
+      whereClause.customer_phone = customerPhone;
+    }
+
+    // Log the where clause for debugging
+    console.log("Where Clause in Service:", whereClause);
+
+    // Call the repository
+    const data = await rentalRepo.findOne(whereClause);
 
     if (!data) {
       throw new ErrorNotFoundException();
@@ -137,64 +146,55 @@ const createRental = async (req) => {
 
 // update rental (user returns wheelchair)
 const updateRental = async (req) => {
+  const rentalId = req.params.id; // Extract id from URL params
+  const transaction = await db.sequelize.transaction(); // Start a transaction
+
   try {
-    const rentalId = req.params.id;
-    const transaction = await db.sequelize.transaction();
-
-    // Ambil rental berdasarkan rental_id
-    const rental = await rentalRepo.findOne({
-      where: {
-        id: rentalId,
-      },
-    });
-
+    // Fetch the rental record based on rentalId
+    const rental = await rentalRepo.findOne({ id: rentalId }); // Use the repository method
     if (!rental) {
-      throw new Error("Rental not found"); // Menangani jika rental_id tidak ditemukan
+      throw new Error("Rental not found"); // Handle case where rental is not found
     }
 
-    // Set payload yang akan diupdate
+    // Prepare the update payload
     const updatePayload = {
-      return_date: req.body.return_date, // Return date diterima dari body
-      status: STATUS.PENDING, // Status sementara, akan diupdate oleh admin menjadi Completed
-      modified_at: new Date(),
-      modified_by: req.body.customer_name, // Nama penyewa yang mengubah data
+      return_date: req.body.return_date, // Return date from the request body
+      status: STATUS.PENDING, // Temporary status, to be updated by admin later
+      modified_at: new Date(), // Timestamp for modification
+      modified_by: req.body.customer_name, // Name of the customer making the change
     };
 
-    // Pastikan return_date ada dalam request body
-    if (!updatePayload.return_date) {
-      throw new Error("Return date is required");
-    }
-
-    // Hitung total price berdasarkan durasi penyewaan
+    // Calculate total price based on rental duration
     const totalPrice = calculateTotalPrice(
-      rental.rental_price, // Harga per hari dari kursi roda
-      rental.rental_date, // Tanggal rental
-      req.body.return_date // Tanggal pengembalian dari body
+      rental.rental_price, // Daily rental price from the rental record
+      rental.rental_date, // Rental start date from the rental record
+      req.body.return_date // Return date from the request body
     );
 
-    updatePayload.total_price = totalPrice; // Menambahkan total_price yang dihitung
+    // Add calculated total price to the update payload
+    updatePayload.total_price = totalPrice;
 
-    // Update rental dengan data yang baru
+    // Update the rental record
     await rentalRepo.update(
-      updatePayload,
-      { id: rentalId, customer_phone: req.body.customer_phone },
-      transaction
+      updatePayload, // Data to update
+      { id: rentalId }, // Use the repository method
+      transaction // Pass the transaction
     );
 
-    // Menandai kursi roda sebagai tersedia setelah pengembalian
+    // Mark the wheelchair as available after return
     await wheelchairRepo.update(
-      { available: true },
-      { id: rental.wheelchair_id },
-      transaction
+      { available: true }, // Data to update
+      { id: rental.wheelchair_id }, // Use the repository method
+      transaction // Pass the transaction
     );
 
-    // Commit transaksi
+    // Commit the transaction
     await transaction.commit();
 
-    // Mengembalikan data yang telah diperbarui
+    // Return the updated payload
     return updatePayload;
   } catch (error) {
-    // Rollback transaksi jika terjadi error
+    // Rollback the transaction in case of an error
     await transaction.rollback();
     console.error(`--- Service Error: ${error.message}`);
     throw error;
@@ -250,12 +250,6 @@ const calculateTotalPrice = (rentalPrice, rentalDate, returnDate) => {
   const totalPrice = days * rentalPrice;
 
   return parseFloat(totalPrice.toFixed(2));
-};
-
-const isValidUUID = (id) => {
-  const regex =
-    /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
-  return regex.test(id);
 };
 
 module.exports = {
