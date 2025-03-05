@@ -19,5 +19,8 @@ module.exports = {
         PORT: process.env.REDIS_PORT || '3305',
         PASSWORD: process.env.REDIS_PASS || 'redis_pass',
         DB: process.env.REDIS_DB || 0
+    },
+    mongo: {
+        uri: process.env.MONGO_URI || '',
     }
 };

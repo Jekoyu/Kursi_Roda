@@ -15,10 +15,10 @@ const sequelize = new Sequelize(dbConfig.DB, dbConfig.USERNAME, dbConfig.PASSWOR
 sequelize
     .authenticate()
     .then(() => {
-        console.log('Connected to the database mysql!');
+        console.log('✅ Mysql connected successfully');
     })
     .catch((err) => {
-        console.log('Cannot connect to the database mysql:', err);
+        console.log('❌ Mysql connection error:', err);
     });
 
 const db = {};
