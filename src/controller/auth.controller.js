@@ -1,38 +1,35 @@
-const resFormat = require('../../utility/response-api');
-const authService = require('../service/auth.service');
+const authService = require("../service/auth.service");
 
-// login
-const login = async (req, res, next) => {
+class AuthController {
+  async register(req, res) {
     try {
-        const data = await authService.login(req);
-        return res.status(200).send(resFormat({ code: 200 }, data));
+      const { username, password } = req.body;
+      const result = await authService.register(username, password);
+      res.json(result);
     } catch (error) {
-        next(error);
+      res.status(400).json({ error: error.message });
     }
-};
+  }
 
-// validator
-const validator = async (req, res, next) => {
+  async login(req, res) {
     try {
-        const data = await authService.validator(req);
-        return res.status(200).send(resFormat({ code: 200 }, data));
+      const { username, password } = req.body;
+      const result = await authService.login(username, password);
+      res.json(result);
     } catch (error) {
-        next(error);
+      res.status(400).json({ error: error.message });
     }
-};
+  }
 
-// logout
-const logout = async (req, res, next) => {
+  async logout(req, res) {
     try {
-        await authService.logout(req);
-        return res.status(200).send(resFormat({ code: 200 }, []));
+      const { userId } = req.body;
+      const result = await authService.logout(userId);
+      res.json(result);
     } catch (error) {
-        next(error);
+      res.status(400).json({ error: error.message });
     }
-};
+  }
+}
 
-module.exports = {
-    login,
-    validator,
-    logout
-};
+module.exports = new AuthController();
