@@ -1,12 +1,13 @@
-// const IORedis = require('ioredis');
-// const dbConfig = require('../config/db.config')['redis'];
+const Redis = require("ioredis");
+require("dotenv").config();
 
-// // Konfigurasi Redis
-// const redisConfig = {
-//     host: dbConfig.HOST,
-//     port: dbConfig.PORT,
-//     password: dbConfig.PASSWORD,
-//     db: dbConfig.DB
-// };
+const redis = new Redis({
+  host: process.env.REDIS_HOST,
+  port: process.env.REDIS_PORT,
+  password: process.env.REDIS_PASS,
+  db: process.env.REDIS_DB,
+});
 
-// module.exports = new IORedis(redisConfig);
+redis.on("error", (err) => console.error("Redis Error: ", err));
+
+module.exports = redis;
