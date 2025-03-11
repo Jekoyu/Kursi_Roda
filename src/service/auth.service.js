@@ -34,14 +34,14 @@ class AuthService {
     if (!isValid) throw new Error("Invalid credentials");
 
     const token = jwt.sign({ id: user.id, username }, process.env.AES_KEY, {
-      expiresIn: process.env.AUTH_TOKEN_EXPIRED_TIME_MINUTE * 60,
+      expiresIn: process.env.AUTH_TOKEN_EXPIRED_TIME_MINUTE ,
     });
 
     await redis.set(
       `auth:${user.id}`,
       token,
       "EX",
-      process.env.AUTH_TOKEN_EXPIRED_TIME_MINUTE * 60
+      process.env.AUTH_TOKEN_EXPIRED_TIME_MINUTE 
     );
     await Log.create({ username, action: "LOGIN", timestamp: new Date() });
 
@@ -55,3 +55,4 @@ class AuthService {
 }
 
 module.exports = new AuthService();
+ 
