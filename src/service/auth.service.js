@@ -3,6 +3,7 @@ const jwt = require("jsonwebtoken");
 const redis = require("../../database/redis.connection");
 const userRepository = require("../repository/auth.repository");
 const mongoose = require("mongoose");
+const { storeTokenToRedis } = require("./token.service");
 
 const logSchema = new mongoose.Schema({
   username: String,
@@ -37,14 +38,9 @@ class AuthService {
       expiresIn: process.env.AUTH_TOKEN_EXPIRED_TIME_MINUTE ,
     });
 
-    await redis.set(
-      `auth:${user.id}`,
-      token,
-      "EX",
-      process.env.AUTH_TOKEN_EXPIRED_TIME_MINUTE 
-    );
-    await Log.create({ username, action: "LOGIN", timestamp: new Date() });
+await storeTokenToRedis(`${user.id}`, user.id, token);
 
+    await Log.create({ username, action: "LOGIN", timestamp: new Date() });
     return { token };
   }
 
