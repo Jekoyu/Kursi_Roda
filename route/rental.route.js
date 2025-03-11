@@ -3,43 +3,37 @@ const router = express.Router();
 
 const requestValidation = require("../middleware/request-validation.middleware"); // validation request
 
-// Path grup untuk rental
 const pathGroup = "rental";
 
-// Controller untuk transaksi penyewaan kursi roda
+// Controller
 const rentalController = require("../src/controller/rental.controller");
 
-// Validasi untuk transaksi penyewaan
+// Validasi
 const rentalValidationRules = require("../src/validation/rental.validation");
 
-// Get semua transaksi penyewaan untuk user
-router.get(`/${pathGroup}`, rentalController.showAllRentals);
+router.get(`/${pathGroup}`, rentalController.showAll);
 
-// Get detail transaksi penyewaan berdasarkan rental_id
-router.get(`/${pathGroup}/:id`, rentalController.rentalDetail);
+router.get(`/${pathGroup}/:id`, rentalController.showDetail);
 
-// Buat transaksi penyewaan baru
 router.post(
   `/${pathGroup}`,
   rentalValidationRules.create,
   requestValidation,
-  rentalController.createRental
+  rentalController.create
 );
 
-// Update transaksi penyewaan (misalnya setelah kursi roda dikembalikan)
 router.patch(
   `/${pathGroup}/:id`,
   rentalValidationRules.update,
   requestValidation,
-  rentalController.updateRental
+  rentalController.update
 );
 
-// Batalkan transaksi penyewaan (soft-delete)
 router.delete(
   `/${pathGroup}/:id`,
   rentalValidationRules.cancel,
   requestValidation,
-  rentalController.cancelRental
+  rentalController.cancel
 );
 
 module.exports = router;

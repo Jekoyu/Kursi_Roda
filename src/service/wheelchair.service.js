@@ -6,7 +6,6 @@ const {
 } = require("../../exception/error-query.exception");
 const db = require("../../database/mysql.connection");
 const { getPagination } = require("../../utility/pagination.utility"); // utility: pagination
-const STATUS = require("../constant/status-data.constant"); // constant
 
 // repository
 const wheelchairRepo = require("../repository/wheelchair.repository");
@@ -26,16 +25,14 @@ const getAll = async (req) => {
       },
     };
 
-    // set search and/or filter
     const filter = {
       search: req.query.search || false,
     };
 
-    // prettier-ignore
     const [data, totalData] = await Promise.all([
-            wheelchairRepo.findAll(options, filter),
-            wheelchairRepo.count(filter),
-        ]);
+      wheelchairRepo.findAll(options, filter),
+      wheelchairRepo.count(filter),
+    ]);
 
     return {
       page: {
@@ -57,7 +54,6 @@ const getDetail = async (req) => {
   try {
     const wheelchairId = req.params.id;
 
-    // get data by 'id'
     const data = await wheelchairRepo.findOne({ id: wheelchairId });
 
     if (!data) {
@@ -73,7 +69,6 @@ const getDetail = async (req) => {
 
 // create
 const create = async (req) => {
-  // set transaction
   const transaction = await db.sequelize.transaction();
 
   try {
@@ -88,12 +83,10 @@ const create = async (req) => {
 
     const createData = await wheelchairRepo.create(payload, transaction);
 
-    // commit transaction
     await transaction.commit();
 
     return createData;
   } catch (error) {
-    // rollback transaction
     await transaction.rollback();
 
     console.error(`--- Service Error: ${error.message}`);
@@ -127,12 +120,10 @@ const update = async (req) => {
       throw new ErrorNotFoundException();
     }
 
-    // commit transaction
     await transaction.commit();
 
     return payload;
   } catch (error) {
-    // rollback transaction
     await transaction.rollback();
 
     console.error(`--- Service Error: ${error.message}`);
@@ -144,7 +135,6 @@ const update = async (req) => {
 const softDelete = async (req) => {
   const wheelchairId = req.params.id;
 
-  // set transaction
   const transaction = await db.sequelize.transaction();
 
   try {
@@ -163,12 +153,10 @@ const softDelete = async (req) => {
       throw new ErrorNotFoundException();
     }
 
-    // commit transaction
     await transaction.commit();
 
     return payload;
   } catch (error) {
-    // rollback transaction
     await transaction.rollback();
 
     console.error(`--- Service Error: ${error.message}`);

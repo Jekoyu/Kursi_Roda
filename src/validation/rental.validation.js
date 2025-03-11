@@ -55,19 +55,15 @@ const update = [
 // cancel rental validation
 // prettier-ignore
 const cancel = [
-    param('id', 'Rental ID is required')
-        .exists({ checkFalsy: true })
-        .custom(async (value) => {
-            const rental = await rentalRepo.findOne({ id: value });
-            if (!rental) {
-                throw new Error('Rental not found');
-            }
-            return true;
-        }),
-    body('customer_phone', 'Phone number is required')
-        .exists({ checkFalsy: true })
-        .trim()
-        .isNumeric().withMessage('Phone number must be numeric')
+  param("id", "Rental ID is required")
+    .exists({ checkFalsy: true })
+    .custom(async (value) => {
+      const rental = await rentalRepo.findOne({ id: value });
+      if (!rental) {
+        throw new Error("Rental not found");
+      }
+      return true;
+    })
 ];
 
 module.exports = {

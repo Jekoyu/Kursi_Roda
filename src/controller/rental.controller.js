@@ -3,8 +3,8 @@ const resFormat = require("../../utility/response-api");
 // service
 const rentalService = require("../service/rental.service");
 
-// get all rentals (user's transactions)
-const showAllRentals = async (req, res, next) => {
+// get
+const showAll = async (req, res, next) => {
   try {
     const data = await rentalService.getAllRentals(req);
     return res.status(200).send(resFormat({ code: 200 }, data));
@@ -13,8 +13,8 @@ const showAllRentals = async (req, res, next) => {
   }
 };
 
-// get rental detail
-const rentalDetail = async (req, res, next) => {
+// get
+const showDetail = async (req, res, next) => {
   try {
     const data = await rentalService.getRentalDetail(req);
     return res.status(200).send(resFormat({ code: 200 }, data));
@@ -23,8 +23,8 @@ const rentalDetail = async (req, res, next) => {
   }
 };
 
-// create rental transaction
-const createRental = async (req, res, next) => {
+// create
+const create = async (req, res, next) => {
   try {
     const data = await rentalService.createRental(req);
     return res.status(201).send(resFormat({ code: 201 }, data)); // Status 201 for creation
@@ -33,8 +33,8 @@ const createRental = async (req, res, next) => {
   }
 };
 
-// update rental (return wheelchair)
-const updateRental = async (req, res, next) => {
+// update
+const update = async (req, res, next) => {
   try {
     const data = await rentalService.updateRental(req);
     return res.status(200).send(resFormat({ code: 200 }, data));
@@ -43,8 +43,8 @@ const updateRental = async (req, res, next) => {
   }
 };
 
-// cancel rental transaction
-const cancelRental = async (req, res, next) => {
+// cancel
+const cancel = async (req, res, next) => {
   try {
     const data = await rentalService.cancelRental(req);
     return res.status(200).send(resFormat({ code: 200 }, data));
@@ -54,9 +54,9 @@ const cancelRental = async (req, res, next) => {
 };
 
 module.exports = {
-  showAllRentals,
-  rentalDetail,
-  createRental,
-  updateRental,
-  cancelRental,
+  showAll,
+  showDetail,
+  create,
+  update,
+  cancel,
 };

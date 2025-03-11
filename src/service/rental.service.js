@@ -26,7 +26,7 @@ const getAllRentals = async (req) => {
 
     const filter = {
       search: req.query.search || false,
-      customerPhone: req.query.phone || false, // Filter by user phone
+      customerPhone: req.query.phone || false,
     };
 
     const [data, totalData] = await Promise.all([
@@ -49,14 +49,13 @@ const getAllRentals = async (req) => {
   }
 };
 
-// get rental details based on phone number (without login)
+// get rental details based on phone number
 const getRentalDetail = async (req) => {
-  const rentalId = req.params.id; // Should be a string
-  const customerPhone = req.query.phone; // Should be a string or undefined
+  const rentalId = req.params.id;
+  const customerPhone = req.query.phone;
 
-  // Log the inputs for debugging
-  console.log("Rental ID:", rentalId, "Type:", typeof rentalId);
-  console.log("Customer Phone:", customerPhone, "Type:", typeof customerPhone);
+  // console.log("Rental ID:", rentalId, "Type:", typeof rentalId);
+  // console.log("Customer Phone:", customerPhone, "Type:", typeof customerPhone);
 
   try {
     // Construct the where clause
@@ -69,8 +68,7 @@ const getRentalDetail = async (req) => {
       whereClause.customer_phone = customerPhone;
     }
 
-    // Log the where clause for debugging
-    console.log("Where Clause in Service:", whereClause);
+    // console.log("Where Clause in Service:", whereClause);
 
     // Call the repository
     const data = await rentalRepo.findOne(whereClause);
@@ -89,10 +87,9 @@ const getRentalDetail = async (req) => {
 // create rental (user creates rental for a wheelchair)
 const createRental = async (req) => {
   const transaction = await db.sequelize.transaction();
+  const wheelchairId = req.body.wheelchair_id;
 
   try {
-    const wheelchairId = req.body.wheelchair_id;
-
     // Check if the wheelchair exists and is available
     const wheelchair = await wheelchairRepo.findOne({ id: wheelchairId });
     if (!wheelchair || !wheelchair.available) {
@@ -111,9 +108,9 @@ const createRental = async (req) => {
       rental_price: wheelchair.price,
       status: STATUS.ONGOING,
       created_at: new Date(),
-      created_by: req.body.customer_name, // Store customer name as creator
+      created_by: req.body.customer_name,
       modified_at: new Date(),
-      modified_by: req.body.customer_name, // Store customer name as modifier
+      modified_by: req.body.customer_name,
     };
 
     // Calculate total price based on rental duration and rental price
@@ -123,7 +120,7 @@ const createRental = async (req) => {
       rentalPayload.return_date
     );
 
-    rentalPayload.total_price = totalPrice; // Set the calculated total price
+    rentalPayload.total_price = totalPrice;
 
     const rentalData = await rentalRepo.create(rentalPayload, transaction);
 
@@ -146,46 +143,42 @@ const createRental = async (req) => {
 
 // update rental (user returns wheelchair)
 const updateRental = async (req) => {
-  const rentalId = req.params.id; // Extract id from URL params
-  const transaction = await db.sequelize.transaction(); // Start a transaction
+  const rentalId = req.params.id;
+  const transaction = await db.sequelize.transaction();
 
   try {
     // Fetch the rental record based on rentalId
-    const rental = await rentalRepo.findOne({ id: rentalId }); // Use the repository method
+    const rental = await rentalRepo.findOne({ id: rentalId });
     if (!rental) {
-      throw new Error("Rental not found"); // Handle case where rental is not found
+      throw new Error("Rental not found");
     }
 
     // Prepare the update payload
     const updatePayload = {
-      return_date: req.body.return_date, // Return date from the request body
-      status: STATUS.PENDING, // Temporary status, to be updated by admin later
-      modified_at: new Date(), // Timestamp for modification
-      modified_by: req.body.customer_name, // Name of the customer making the change
+      return_date: req.body.return_date,
+      status: STATUS.PENDING,
+      modified_at: new Date(),
+      modified_by: req.body.customer_name,
     };
 
     // Calculate total price based on rental duration
     const totalPrice = calculateTotalPrice(
-      rental.rental_price, // Daily rental price from the rental record
-      rental.rental_date, // Rental start date from the rental record
-      req.body.return_date // Return date from the request body
+      rental.rental_price,
+      rental.rental_date,
+      req.body.return_date
     );
 
     // Add calculated total price to the update payload
     updatePayload.total_price = totalPrice;
 
     // Update the rental record
-    await rentalRepo.update(
-      updatePayload, // Data to update
-      { id: rentalId }, // Use the repository method
-      transaction // Pass the transaction
-    );
+    await rentalRepo.update(updatePayload, { id: rentalId }, transaction);
 
     // Mark the wheelchair as available after return
     await wheelchairRepo.update(
-      { available: true }, // Data to update
-      { id: rental.wheelchair_id }, // Use the repository method
-      transaction // Pass the transaction
+      { available: true },
+      { id: rental.wheelchair_id },
+      transaction
     );
 
     // Commit the transaction
@@ -194,7 +187,6 @@ const updateRental = async (req) => {
     // Return the updated payload
     return updatePayload;
   } catch (error) {
-    // Rollback the transaction in case of an error
     await transaction.rollback();
     console.error(`--- Service Error: ${error.message}`);
     throw error;
@@ -207,26 +199,29 @@ const cancelRental = async (req) => {
   const transaction = await db.sequelize.transaction();
 
   try {
+    // Fetch the rental record based on rentalId
+    const rental = await rentalRepo.findOne({ id: rentalId });
+    if (!rental) {
+      throw new Error("Rental not found");
+    }
+
     const cancelPayload = {
-      status: STATUS.CANCELLED, // Cancelled if deleted
+      status: STATUS.CANCELLED,
       modified_at: new Date(),
-      modified_by: req.body.customer_name, // Store customer name as modifier
+      modified_by: req.body.customer_name,
     };
 
-    await rentalRepo.update(
-      cancelPayload,
-      { id: rentalId, customer_phone: req.body.customer_phone },
-      transaction
-    );
+    // Update the rental record
+    await rentalRepo.update(cancelPayload, { id: rentalId }, transaction);
 
-    // Make wheelchair available again after cancellation
-    const rental = await rentalRepo.findOne({ id: rentalId });
+    // Mark the wheelchair as available after return
     await wheelchairRepo.update(
       { available: true },
       { id: rental.wheelchair_id },
       transaction
     );
 
+    // Commit the transaction
     await transaction.commit();
 
     return cancelPayload;

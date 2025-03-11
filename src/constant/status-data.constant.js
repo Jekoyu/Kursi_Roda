@@ -1,7 +1,7 @@
 const STATUS = Object.freeze({
-  ACTIVE: "ACT",
-  INACTIVE: "NCT",
-  DELETED: "DEL",
+  // ACTIVE: "ACT",
+  // INACTIVE: "NCT",
+  // DELETED: "DEL",
   AVAILABLE: "AVAIL",
   UNAVAILABLE: "UNAVAIL",
   PENDING: "Pending",

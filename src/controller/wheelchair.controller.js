@@ -3,7 +3,7 @@ const resFormat = require("../../utility/response-api");
 // service
 const wheelchairService = require("../service/wheelchair.service");
 
-// get all
+// get
 const showAll = async (req, res, next) => {
   try {
     const data = await wheelchairService.getAll(req);
@@ -13,8 +13,8 @@ const showAll = async (req, res, next) => {
   }
 };
 
-// get detail
-const detail = async (req, res, next) => {
+// get
+const showDetail = async (req, res, next) => {
   try {
     const data = await wheelchairService.getDetail(req);
     return res.status(200).send(resFormat({ code: 200 }, data));
@@ -43,8 +43,8 @@ const update = async (req, res, next) => {
   }
 };
 
-// delete (soft delete)
-const softDelete = async (req, res, next) => {
+// delete
+const Delete = async (req, res, next) => {
   try {
     const data = await wheelchairService.softDelete(req);
     return res.status(200).send(resFormat({ code: 200 }, data));
@@ -55,8 +55,8 @@ const softDelete = async (req, res, next) => {
 
 module.exports = {
   showAll,
-  detail,
+  showDetail,
   create,
   update,
-  softDelete,
+  Delete,
 };
